@@ -228,8 +228,11 @@ ForEach ($Key in $Keys){
   If ($SecEdit['Privilege Rights'][$Key].Length -gt 2){
     $Temp_Value = ''
     ForEach ($Temp in $SecEdit.'Privilege Rights'[$Key].Replace("*","").Split(",")) {
-      $Temp_Value+=","+(New-Object System.Security.Principal.SecurityIdentifier($Temp)).Translate( [System.Security.Principal.NTAccount]).Value
-    }
+      If ($Temp.Substring(0,2) -eq 'S-') {
+        $Temp_Value+=","+(New-Object System.Security.Principal.SecurityIdentifier($Temp)).Translate( [System.Security.Principal.NTAccount]).Value
+      } else {
+        $Temp_Value+=","+$Temp
+      }    }
     $SecEdit['Privilege Rights'][$Key] = $Temp_Value.Substring(1,$Temp_Value.Length-1)
   }
 }
