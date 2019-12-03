@@ -1,4 +1,4 @@
- Param (
+Param (
      [string]$File,
      [switch]$Fix = $false
 )
@@ -131,7 +131,7 @@ if (-not $File) {
     $File = ".\$File"
   }
 }
-if (-not Test-Path $File) {
+if (-not (Test-Path $File)) {
   write-error "Could not find an audit file" -ErrorAction Stop
 }
 
