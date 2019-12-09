@@ -1,0 +1,55 @@
+#!/bin/bash
+# Name: CopyCompress
+#    Created: 2019/12/07
+# Created by: Steve Borba
+#    Contact: Steven.Borba@edd.ca.gov
+#    Purpose: Script to Copy and Compress files from primary to secondary storage
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Change Log
+# 2019/12/07 Steve Borba
+# Script creation
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Change Log
+# 2019/12/08 Steve Borba
+# Add Logging
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  PIDFILE=/var/run/`basename "$0"`
+  PRIMARY=/var/log/archive/
+SECONDARY=/mnt/archive01/syslog/
+  LOGFILE=/var/log/CopyCompress-$(date +%Y%m%d)
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+if [ -f $PIDFILE ]; then
+  PID=$(cat $PIDFILE)
+  if ps -p $PID > /dev/null ;then
+    echo "Already running, exit"
+    exit
+  fi
+fi
+echo $$ > "$PIDFILE"
+trap "rm -f -- '$PIDFILE'" EXIT
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+echo "$(date +%Y-%m-%d-%T) Starting CopyCompress script" >> $LOGFILE
+ALLFILES=$(find $PRIMARY -type f -print)
+for F in $ALLFILES; do
+  echo "$(date +%Y-%m-%d-%T) Working on File $F" >> $LOGFILE
+  FILE=${F:${#PRIMARY}}
+  if ! [ -f "$SECONDARY$FILE.gz" ]; then
+    if [ -f "$SECONDARY$FILE.gz.tmp" ]; then
+      echo "$(date +%Y-%m-%d-%T)   Removed tmp file" >> $LOGFILE
+      rm -f "$SECONDARY$FILE.gz.tmp"
+    fi
+    if test `find "$F" -mmin +1440`; then
+      if ! [[ `ls -l /proc/*/fd | grep $F` ]]; then
+        echo "$(date +%Y-%m-%d-%T)   Compressing File" >> $LOGFILE
+        cat "$PRIMARY$FILE" | gzip -9 > "$SECONDARY$FILE.gz.tmp"
+        echo "$(date +%Y-%m-%d-%T)   Renaming File" >> $LOGFILE
+        mv "$SECONDARY$FILE.gz.tmp" "$SECONDARY$FILE.gz"
+      fi
+    fi
+  fi
+done
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
