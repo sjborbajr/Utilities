@@ -1,0 +1,65 @@
+#!/bin/bash
+# Name: SymlinkCleanup
+#    Created: 2019/12/08
+# Created by: Steve Borba
+#    Contact: Steven.Borba@edd.ca.gov
+#    Purpose: Script to link files to secondary storage and purge from primary
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Change Log
+# 2019/12/08 Steve Borba
+# Script creation
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  PIDFILE=/var/run/`basename "$0"`
+  PRIMARY=/var/log/archive/
+SECONDARY=/mnt/archive01/syslog/
+  LOGFILE=/var/log/SymlinkCleanup-$(date +%Y%m%d)
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+if [ -f $PIDFILE ]; then
+  PID=$(cat $PIDFILE)
+  if ps -p $PID > /dev/null ;then
+    exit
+  fi
+fi
+echo $$ > "$PIDFILE"
+trap "rm -f -- '$PIDFILE'" EXIT
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+echo "$(date +%Y-%m-%d-%T) Starting Script" >> $LOGFILE
+YEARS=$(find $PRIMARY -mindepth 1 -maxdepth 1 ! -type l)
+for YEAR in $YEARS; do
+  echo "$(date +%Y-%m-%d-%T) Working on Folder $YEAR" >> $LOGFILE
+  FILES=$(find $YEAR -type f -print)
+  if [ -z "$FILES" ]; then
+    echo "$(date +%Y-%m-%d-%T)   Folder Empty, changing to Symlink" >> $LOGFILE
+    rm -fr $YEAR
+    ln -s $SECONDARY${YEAR:${#PRIMARY}} $YEAR
+  else
+    MONTHS=$(find $YEAR -mindepth 1 -maxdepth 1 ! -type l)
+    for MONTH in $MONTHS; do
+      echo "$(date +%Y-%m-%d-%T) Working on Folder $MONTH" >> $LOGFILE
+      FILES=$(find $MONTH -type f -print)
+      if [ -z "$FILES" ]; then
+        echo "$(date +%Y-%m-%d-%T)   Folder Empty, changing to Symlink" >> $LOGFILE
+        rm -fr $MONTH
+        ln -s $SECONDARY${MONTH:${#PRIMARY}} $MONTH
+      else
+        DAYS=$(find $MONTH -mindepth 1 -maxdepth 1 ! -type l)
+        for DAY in $DAYS; do
+          echo "$(date +%Y-%m-%d-%T) Working on Folder $DAY" >> $LOGFILE
+          FILES=$(find $DAY -type f -print)
+          if [ -z "$FILES" ]; then
+            echo "$(date +%Y-%m-%d-%T)   Folder Empty, changing to Symlink" >> $LOGFILE
+            rm -fr $DAY
+            ln -s $MONTH${DAY:${#PRIMARY}} $DAY
+          fi
+        done
+      fi
+    done
+  fi
+done
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
