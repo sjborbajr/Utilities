@@ -1,0 +1,73 @@
+#!/bin/bash
+# Name: TrimSpace
+#    Created: 2019/12/07
+# Created by: Steve Borba
+#    Contact: Steven.Borba@edd.ca.gov
+#    Purpose: Script to link files to secondary storage and purge from primary
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Change Log
+# 2019/12/07 Steve Borba
+# Script creation
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Change Log
+# 2019/12/08 Steve Borba
+# Add Logging
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  PIDFILE=/var/run/`basename "$0"`
+  PRIMARY=/var/log/archive/
+SECONDARY=/mnt/archive01/syslog/
+  LOGFILE=/var/log/TrimSpace-$(date +%Y%m%d)
+   TARGET=90
+MAX_COUNT=20
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+if [ -f $PIDFILE ]; then
+  PID=$(cat $PIDFILE)
+  if ps -p $PID > /dev/null ;then
+    exit
+  fi
+fi
+echo $$ > "$PIDFILE"
+trap "rm -f -- '$PIDFILE'" EXIT
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+echo "$(date +%Y-%m-%d-%T) Started Script" >> $LOGFILE
+USED=$(df $PRIMARY --output=pcent | tail -n 1)
+USED=${USED:0:-1}
+if [ "$USED" -gt "$TARGET" ]; then
+  echo "$(date +%Y-%m-%d-%T) User space of $USED is greater that $TARGET, trim by switching to Symlinks of gzipped log" >> $LOGFILE
+  ALLFILES=$(find $PRIMARY -type f -print)
+  i="0"
+  for F in $ALLFILES; do
+    FILE=${F:${#PRIMARY}}
+    echo "$(date +%Y-%m-%d-%T) Working with File $FILE" >> $LOGFILE
+    if [ -f "$SECONDARY$FILE.gz" ]; then
+      echo "$(date +%Y-%m-%d-%T)   Zipped Copy Found" >> $LOGFILE
+      if ! [[ `ls -l /proc/*/fd | grep $F` ]]; then
+        echo "$(date +%Y-%m-%d-%T)   File not in Use, Change to Symlink" >> $LOGFILE
+        ln -s $SECONDARY$FILE.gz $PRIMARY$FILE.gz
+        rm -f $PRIMARY$FILE
+      fi
+    fi
+    sync;sync;sync
+    USED=$(df $PRIMARY --output=pcent | tail -n 1)
+    USED=${USED:0:-1}
+    if [ "$USED" -lt "$TARGET" ]; then
+      echo "$(date +%Y-%m-%d-%T) Dropped below Target space, quitting" >> $LOGFILE
+      echo break space
+      break
+    fi
+    if [ $i -gt $MAX_COUNT ]; then
+      echo "$(date +%Y-%m-%d-%T) Looped $MAX_COUNT times, quitting" >> $LOGFILE
+      echo break loop
+      break
+    fi
+    i=$[$i+1]
+  done
+  echo "$(date +%Y-%m-%d-%T) Could not find files to Cleanup" >> $LOGFILE
+fi
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
