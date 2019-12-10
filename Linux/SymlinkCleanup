@@ -30,7 +30,7 @@ trap "rm -f -- '$PIDFILE'" EXIT
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 echo "$(date +%Y-%m-%d-%T) Starting Script" >> $LOGFILE
-YEARS=$(find $PRIMARY -mindepth 1 -maxdepth 1 ! -type l)
+YEARS=$(find $PRIMARY -mindepth 1 -maxdepth 1 -type d)
 for YEAR in $YEARS; do
   echo "$(date +%Y-%m-%d-%T) Working on Folder $YEAR" >> $LOGFILE
   FILES=$(find $YEAR -type f -print)
@@ -39,7 +39,7 @@ for YEAR in $YEARS; do
     rm -fr $YEAR
     ln -s $SECONDARY${YEAR:${#PRIMARY}} $YEAR
   else
-    MONTHS=$(find $YEAR -mindepth 1 -maxdepth 1 ! -type l)
+    MONTHS=$(find $YEAR -mindepth 1 -maxdepth 1 -type d)
     for MONTH in $MONTHS; do
       echo "$(date +%Y-%m-%d-%T) Working on Folder $MONTH" >> $LOGFILE
       FILES=$(find $MONTH -type f -print)
@@ -48,7 +48,7 @@ for YEAR in $YEARS; do
         rm -fr $MONTH
         ln -s $SECONDARY${MONTH:${#PRIMARY}} $MONTH
       else
-        DAYS=$(find $MONTH -mindepth 1 -maxdepth 1 ! -type l)
+        DAYS=$(find $MONTH -mindepth 1 -maxdepth 1 -type d)
         for DAY in $DAYS; do
           echo "$(date +%Y-%m-%d-%T) Working on Folder $DAY" >> $LOGFILE
           FILES=$(find $DAY -type f -print)
