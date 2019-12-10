@@ -34,6 +34,27 @@ trap "rm -f -- '$PIDFILE'" EXIT
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 echo "$(date +%Y-%m-%d-%T) Starting CopyCompress script" >> $LOGFILE
 ALLFILES=$(find $PRIMARY -type f -print)
+
+echo "$(date +%Y-%m-%d-%T) Check/build directory structure in $SECONDARY" >> $LOGFILE
+YEARS=$(find $PRIMARY -mindepth 1 -maxdepth 1 -type d)
+for YEAR in $YEARS; do
+  if ! [ -d "$SECONDARY${YEAR:${#PRIMARY}}" ]; then
+    echo mkdir $SECONDARY${YEAR:${#PRIMARY}}
+  fi
+  MONTHS=$(find $YEAR -mindepth 1 -maxdepth 1 -type d)
+  for MONTH in $MONTHS; do
+    if ! [ -d "$SECONDARY${MONTH:${#PRIMARY}}" ]; then
+      echo mkdir $SECONDARY${MONTH:${#PRIMARY}}
+    fi
+    DAYS=$(find $MONTH -mindepth 1 -maxdepth 1 -type d)
+    for DAY in $DAYS; do
+      if ! [ -d "$SECONDARY${DAY:${#PRIMARY}}" ]; then
+        echo mkdir $SECONDARY${DAY:${#PRIMARY}}
+      fi
+    done
+  done
+done
+
 for F in $ALLFILES; do
   echo "$(date +%Y-%m-%d-%T) Working on File $F" >> $LOGFILE
   FILE=${F:${#PRIMARY}}
