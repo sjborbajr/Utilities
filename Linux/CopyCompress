@@ -39,17 +39,17 @@ echo "$(date +%Y-%m-%d-%T) Check/build directory structure in $SECONDARY" >> $LO
 YEARS=$(find $PRIMARY -mindepth 1 -maxdepth 1 -type d)
 for YEAR in $YEARS; do
   if ! [ -d "$SECONDARY${YEAR:${#PRIMARY}}" ]; then
-    echo mkdir $SECONDARY${YEAR:${#PRIMARY}}
+    mkdir $SECONDARY${YEAR:${#PRIMARY}}
   fi
   MONTHS=$(find $YEAR -mindepth 1 -maxdepth 1 -type d)
   for MONTH in $MONTHS; do
     if ! [ -d "$SECONDARY${MONTH:${#PRIMARY}}" ]; then
-      echo mkdir $SECONDARY${MONTH:${#PRIMARY}}
+      mkdir $SECONDARY${MONTH:${#PRIMARY}}
     fi
     DAYS=$(find $MONTH -mindepth 1 -maxdepth 1 -type d)
     for DAY in $DAYS; do
       if ! [ -d "$SECONDARY${DAY:${#PRIMARY}}" ]; then
-        echo mkdir $SECONDARY${DAY:${#PRIMARY}}
+        mkdir $SECONDARY${DAY:${#PRIMARY}}
       fi
     done
   done
