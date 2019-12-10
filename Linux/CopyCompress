@@ -66,7 +66,7 @@ for F in $ALLFILES; do
     if test `find "$F" -mmin +1440`; then
       if ! [[ `ls -l /proc/*/fd | grep $F` ]]; then
         echo "$(date +%Y-%m-%d-%T)   Compressing File" >> $LOGFILE
-        cat "$PRIMARY$FILE" | gzip -9 > "$SECONDARY$FILE.gz.tmp"
+        cat "$PRIMARY$FILE" | nice gzip -9 > "$SECONDARY$FILE.gz.tmp"
         echo "$(date +%Y-%m-%d-%T)   Renaming File" >> $LOGFILE
         mv "$SECONDARY$FILE.gz.tmp" "$SECONDARY$FILE.gz"
       fi
