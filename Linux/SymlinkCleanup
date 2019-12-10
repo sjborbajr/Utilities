@@ -55,7 +55,7 @@ for YEAR in $YEARS; do
           if [ -z "$FILES" ]; then
             echo "$(date +%Y-%m-%d-%T)   Folder Empty, changing to Symlink" >> $LOGFILE
             rm -fr $DAY
-            ln -s $MONTH${DAY:${#PRIMARY}} $DAY
+            ln -s $SECONDARY${DAY:${#PRIMARY}} $DAY
           fi
         done
       fi
