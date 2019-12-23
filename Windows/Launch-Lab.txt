@@ -1,0 +1,5 @@
+Address	Protocol	Port	Name	UserName
+10.1.1.1	ssh	22	Jumpbox	msuser
+172.31.1.1	ssh	22	Router	localuser
+172.20.1.1	ssh	22	Switch2	
+cyclades.local	telnet	7005	Port5	not-logon-user
