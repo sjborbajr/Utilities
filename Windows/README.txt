@@ -1,6 +1,8 @@
 ################################
 Nessus Audit Tool:
 ################################
+Open Powershell as an admin (elevated past uac)
+
 Get script:
 wget -Uri "https://raw.githubusercontent.com/sjborbajr/Utilities/master/Windows/Compare-NessusAudit.ps1" -OutFile "Compare-NessusAudit.ps1"
 
