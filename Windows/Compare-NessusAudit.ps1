@@ -611,7 +611,7 @@ If ($Fix -or $Show) {
           $Options+= @{ "PropertyType" = "DWORD" }
         }
         If ($Show) {
-          Write-Host "new-ItemProperty -Force @Options"
+          Write-Host ("new-ItemProperty -Force -path "+$Options.Path+" -Name "+$Options.Name+" -Value "+$Options.Value+" -PropertyType "+$Options.PropertyType)
         } else {
           $Temp = new-ItemProperty -Force @Options
         }
