@@ -610,7 +610,7 @@ If ($Fix -or $Show) {
         } elseif ($Item.ps_SetTo -match "^[\d]*$" -or $Item.value_type -eq "POLICY_DWORD") {
           $Options+= @{ "PropertyType" = "DWORD" }
         }
-        If ($Show)
+        If ($Show) {
           Write-Host "new-ItemProperty -Force @Options"
         } else {
           $Temp = new-ItemProperty -Force @Options
