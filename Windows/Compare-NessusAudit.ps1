@@ -1,6 +1,7 @@
 Param (
      [string]$File,
-     [switch]$Fix = $false
+     [switch]$Fix = $false,
+     [switch]$Show = $false
 )
 #################################################################################################
 Function Get-IniContent {  
@@ -569,7 +570,7 @@ ForEach ($Item in $Items) {
 }
 
 #If Fix flag on, fix them
-If ($Fix) {
+If ($Fix -or $Show) {
   $DONT_FIX = @(
               '9.1.2',     # Force Domain firewall on - allows users to turn enforcement off
               '18.2.1',    # Adding Key doesn't install LAPS
@@ -586,8 +587,12 @@ If ($Fix) {
    if ($DONT_FIX -notcontains $Item.ps_oid) {
     Switch ($Item.Type) {
       "REG_CHECK" {
-        $Item.fix_result = Remove-ItemProperty -Path $Item.ps_reg_key -Name $Item.key_item
-        $Fixed+=$Item
+        if ($Show) {
+          Write-Host "Remove-ItemProperty -Path $Item.ps_reg_key -Name $Item.key_item"
+        } else {
+          $Item.fix_result = Remove-ItemProperty -Path $Item.ps_reg_key -Name $Item.key_item
+          $Fixed+=$Item
+        }
       }
       "REGISTRY_SETTING" {
         $Temp = Get-Item -Path $Item.ps_reg_key -ErrorAction SilentlyContinue
@@ -605,13 +610,21 @@ If ($Fix) {
         } elseif ($Item.ps_SetTo -match "^[\d]*$" -or $Item.value_type -eq "POLICY_DWORD") {
           $Options+= @{ "PropertyType" = "DWORD" }
         }
-        $Temp = new-ItemProperty -Force @Options
+        If ($Show)
+          Write-Host "new-ItemProperty -Force @Options"
+        } else {
+          $Temp = new-ItemProperty -Force @Options
+        }
       }
       "AUDIT_POLICY_SUBCATEGORY" {
         $Temp = ''
         $Item.ps_SetTo | %{ $Temp+= " /"+$_+":enable" }
         $Temp = 'auditpol.exe /set /SubCategory:"'+$Item.audit_policy_subcategory+'"'+$Temp
-        $Temp = (iex $Temp)
+        If ($Show) {
+          Write-Host $Temp
+        } else {
+          $Temp = (iex $Temp)
+        }
       }
       "USER_RIGHTS_POLICY" {
         #To Do
