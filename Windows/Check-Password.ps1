@@ -1,5 +1,7 @@
-﻿$API_PRE = "https://api.pwnedpasswords.com/range/"
+#This is the API that I found
+$API_PRE = "https://api.pwnedpasswords.com/range/"
 
+#pwnedpasswords requires a user agent string, I think this and your IP is how they are tracking if you are trying to harvest the whole dictionary
 If (-not $UserAgentString){
   if ($env:PasswordCheckAgentString) {
     $UserAgentString = $env:PasswordCheckAgentString
@@ -8,17 +10,18 @@ If (-not $UserAgentString){
   }
 }
 
-$SecurePassword = Read-Host -AsSecureString -Prompt "Password to be Checked"
-$SHA = Get-StringHash -String (New-Object PSCredential 0, $SecurePassword).GetNetworkCredential().Password -HashName SHA1
+#Get the SHA of the password
+$SHA = Get-StringHash -String (New-Object PSCredential 0, (Read-Host -AsSecureString -Prompt "Password to be Checked")).GetNetworkCredential().Password -HashName SHA1
 
+#Ask API for the possible matches
 $Data = Invoke-WebRequest -Uri ($API_PRE+$SHA.Substring(0,5)) -UserAgent $UserAgentString
-
 $Possible = $Data.Content.Split("`n")
 
+#Iterate through the return and alert if found
 for ($ix = 0; $ix -lt $Possible.count; $ix++) {
   $Current = $Possible[$ix].split(":")
   if (($SHA.Substring(0,5).ToLower()+$Current[0].tolower()) -eq $SHA){
-    "FOUND!!! - "+$Possible[$ix]
+    "FOUND!!! - "+$SHA.Substring(0,5).ToLower()+$Possible[$ix]
   }
 }
 
