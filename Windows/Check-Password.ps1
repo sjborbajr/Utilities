@@ -16,15 +16,22 @@ $SHA = Get-StringHash -String (New-Object PSCredential 0, (Read-Host -AsSecureSt
 #Ask API for the possible matches
 $Data = Invoke-WebRequest -Uri ($API_PRE+$SHA.Substring(0,5)) -UserAgent $UserAgentString
 $Possible = $Data.Content.Split("`n")
+"Prefix "+$SHA.Substring(0,5).ToLower()+" returned "+$Possible.Count
 
 #Iterate through the return and alert if found
+$Found = $false
 for ($ix = 0; $ix -lt $Possible.count; $ix++) {
   $Current = $Possible[$ix].split(":")
   if (($SHA.Substring(0,5).ToLower()+$Current[0].tolower()) -eq $SHA){
-    "FOUND!!! - "+$SHA.Substring(0,5).ToLower()+$Possible[$ix]
+    $Found = $Current
+    $ix = $Possible.count + 1
   }
 }
-
+if ($Found) {
+  "FOUND!!! - "+$SHA.Substring(0,5).ToLower()+$Possible[$ix]
+} else {
+  "no match found"
+}
 
 Function Get-StringHash {
 <#
