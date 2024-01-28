@@ -27,8 +27,10 @@ for ($ix = 0; $ix -lt $Possible.count; $ix++) {
     $ix = $Possible.count + 1
   }
 }
+
+#Show result
 if ($Found) {
-  "FOUND!!! - "+$SHA.Substring(0,5).ToLower()+$Possible[$ix]
+  "FOUND!!! password represented by "+$SHA.Substring(0,5).ToLower()+$Found[0]+" was in "+$Found[1]+" password collections"
 } else {
   "no match found"
 }
