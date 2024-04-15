@@ -1,3 +1,4 @@
+Function main {
 #This is the API that I found
 $API_PRE = "https://api.pwnedpasswords.com/range/"
 
@@ -34,7 +35,7 @@ if ($Found) {
 } else {
   "no match found"
 }
-
+}
 Function Get-StringHash {
 <#
 .SYNOPSIS
@@ -79,3 +80,4 @@ Daryl Newsholme 2018
         return $output
     }
 }
+main
