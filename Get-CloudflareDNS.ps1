@@ -18,3 +18,4 @@ if ($response.result -eq 'error') {
     }
   }
 }
+$Records.records | Export-Csv records.csv
